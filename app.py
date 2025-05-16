@@ -8,27 +8,32 @@ st.title("📋 Lista de Clientes")
 # Conectar ao banco de dados
 def conectar():
     return mysql.connector.connect(
-        host="localhost",      # ou o IP do servidor
-        user="root",           # seu usuário MySQL
-        password="1210",  # substitua pela sua senha
-        database="new_schema"  # substitua pelo nome do seu banco
+        host="192.168.68.100",       # IP correto da máquina com MySQL
+        user="usuario_remoto",       # usuário remoto criado no MySQL
+        password="3015",             # sua senha
+        database="new_schema"        # nome do banco
     )
 
 # Obter dados da tabela
 def carregar_clientes():
-    conexao = conectar()
-    cursor = conexao.cursor()
-    cursor.execute("SELECT id, nome, email, idade FROM clientes")
-    dados = cursor.fetchall()
-    colunas = ["ID", "Nome", "Email", "Idade"]
-    df = pd.DataFrame(dados, columns=colunas)
-    cursor.close()
-    conexao.close()
-    return df
+    try:
+        conexao = conectar()
+        cursor = conexao.cursor()
+        cursor.execute("SELECT id, nome, email, idade FROM clientes")
+        dados = cursor.fetchall()
+        colunas = ["ID", "Nome", "Email", "Idade"]
+        df = pd.DataFrame(dados, columns=colunas)
+        cursor.close()
+        conexao.close()
+        return df
+    except mysql.connector.Error as err:
+        st.error(f"Erro de conexão com MySQL: {err}")
+        return pd.DataFrame()
 
 # Mostrar tabela na interface
-try:
-    df_clientes = carregar_clientes()
+df_clientes = carregar_clientes()
+
+if not df_clientes.empty:
     st.dataframe(df_clientes)
-except Exception as e:
-    st.error(f"Erro ao conectar ou buscar dados: {e}")
+else:
+    st.warning("Nenhum dado foi retornado da tabela.")
